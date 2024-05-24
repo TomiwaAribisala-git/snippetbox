@@ -1,0 +1,21 @@
+### if .Snippet.Created has the underlying type time.Time
+### you could render the name of the weekday by calling its Weekday()
+### <span>{{.Snippet.Created.Weekday}}</span>
+
+{{define "title"}}Snippet #{{.Snippet.ID}}{{end}}
+{{define "main"}}
+    {{with .Snippet}}
+    <div class='snippet'>
+        <div class='metadata'>
+            <strong>{{.Title}}</strong>
+            <span>#{{.ID}}</span>
+        </div>
+        <pre><code>{{.Content}}</code></pre>
+        <div class='metadata'>
+            <time>Created: {{.Created}}</time>
+            <time>Expires: {{.Expires}}</time>
+        </div>
+    </div>
+ {{end}}
+{{end}}
+

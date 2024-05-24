@@ -3,9 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
+
+	//"text/template"
+	"html/template" // avoiding cross-site scripting (XSS) attacks
 	"net/http"
 	"strconv"
-	"text/template"
 
 	"github.com/TomiwaAribisala-git/snippetbox.git/internal/models"
 )
@@ -16,16 +18,11 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	/*
-		snippets, err := app.snippets.Latest()
-		if err != nil {
-			app.serverError(w, err)
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w, err)
 		return
-		}
-		for _, snippet := range snippets {
-		fmt.Fprintf(w, "%+v\n", snippet)
-		}
-	*/
+	}
 
 	// The base html file must be the first file in the slice
 	files := []string{
@@ -40,9 +37,11 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use the ExecuteTemplate() method to write the content of the "base"
-	// template as the response body.
-	err = ts.ExecuteTemplate(w, "base", nil)
+	data := &templateData{
+		Snippets: snippets,
+	}
+
+	err = ts.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -66,7 +65,28 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "%+v", snippet)
+	files := []string{
+		"./ui/html/base.tmpl",
+		"./ui/html/partials/nav.tmpl",
+		"./ui/html/pages/view.tmpl", // the underlying type of dot will be a models.Snippet struct in view.tmpl
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// snippet data is contained in a models.Snippet struct within a templateData struct
+	data := &templateData{
+		Snippet: snippet,
+	}
+
+	err = ts.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/TomiwaAribisala-git/snippetbox.git/internal/models"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -25,16 +26,18 @@ func main() {
 	// Dependencies for handlers
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
-	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-	}
 
 	db, err := openDB(*dsn)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
 	defer db.Close()
+
+	app := &application{
+		errorLog: errorLog,
+		infoLog:  infoLog,
+		snippets: &models.SnippetModel{DB: db},
+	}
 
 	// HTTP Server
 	srv := &http.Server{
